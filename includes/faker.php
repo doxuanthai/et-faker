@@ -3,7 +3,7 @@
 	function et_faker_add_post() {
 		$post_type = $_POST['post_type'];
 		//$count_post = $_POST['count_post'];
-		$custom_field = $_POST['custom_field'];
+		$custom_field = isset($_POST['custom_field']) ? $_POST['custom_field'] : '';
 		$taxonomy_objects = get_object_taxonomies($post_type);
 		$data = array();
 		$faker = Faker\Factory::create();
@@ -25,23 +25,11 @@
 				$arr = explode("|", $field);
 				if($arr){
 					$value = trim($arr[1]);
-					$meta_post[trim($arr[0])] = $faker->$value;
+					if($value)
+						$meta_post[trim($arr[0])] = $faker->$value;
 				}
 			}
 		}
-		//var_dump($value);
-		//var_dump($meta_post);
-	    /*$meta_post = array(
-	    				'et_location_lng'  => $faker->longitude(103,108) ,
-	    				'et_location_lat'  => $faker->latitude(9,22),
-    					'et_full_location' => $faker->address,
-				        'et_phone'		   => $faker->phoneNumber,
-				        'et_url'           => $faker->url,
-				        'et_fb_url'        => $faker->url,
-				        'et_google_url'    => $faker->url,
-				        'et_twitter_url'   => $faker->url,
-				        'et_carousels'	   => 1,
-	    			);*/
 	    $args = array(
 	    	'post_type'		=> $post_type,
 		    'post_title'    => $title,
@@ -65,7 +53,6 @@
 	    $post_id = wp_insert_post($args);
 	    if($post_id){
 	    	$data[] = array('post_id' => $post_id, 'url' => get_the_permalink($post_id), 'title' => get_the_title($post_id));
-	    	//Assign taxonomy
 	    	if($arr_tax){
 	    		foreach ($arr_tax as $key => $value) {
 	    			wp_set_object_terms( $post_id, $value['value'], $value['name']);

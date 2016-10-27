@@ -8,13 +8,19 @@
       e.preventDefault();
       if(x < max_fields){
         x++;
-        $(wrapper).append('<div class="row cf-row"><div class="col-md-8"><input class="form-control custom-field" type="text" placeholder="custom_field_name|custom_field_value"></div><div class="col-md-4 remove-cf"><a href="#" class="remove_field"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></div></div>'); 
+        $(wrapper).append('<div class="row cf-row"><div class="col-md-8"><input class="form-control custom-field" type="text" placeholder="custom_field_name|custom_field_value"></div><div class="col-md-4 remove-cf"><a href="#" class="remove_field"><i class="fa fa-times fa-lg" aria-hidden="true"></i></a><a href="#" id="et-info"><i class="fa fa-info-circle" aria-hidden="true"></i></a></div></div>');
+        $('#et-info').click(function(event) {
+          $('#log').hide();
+          $('#et-help').fadeIn();
+        });
       }
     });
     $(wrapper).on("click",".remove_field", function(e){
       e.preventDefault(); $(this).parent('div').parent('div').remove(); x--;
     })
 		$('#add-post').click(function(){
+      $('#et-help').hide();
+      $('#et-info-hide').hide();
 			var post_type = $('#post_type').val(),
 				  count_post = $('#count_post').val();
       var custom_field = new Array();
@@ -33,7 +39,7 @@
           data: data,
           action: 'et_faker_add_post',
           beforeSend : function(xhr, opts){
-            $('#log').html("<p style='color:red;'>Start...Please wait few minutes...</p><br>");
+            $('#log').html("<p style='color:red;'>Start...Please wait few minutes...</p>");
             $('#log').css("display","block");
           },
           success: function(res) {
@@ -50,5 +56,12 @@
         });
       }
 		});
+    $('#et-info').click(function(event) {
+      $('#et-help').fadeIn();
+      $('#et-info-hide').show();
+    });
+    $('#et-info-hide').click(function(event) {
+      $('#et-help').fadeOut('slow');
+    });
 	});
 }(jQuery));

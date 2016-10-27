@@ -14,3 +14,19 @@ pre#log {
 .cf-row{
 	padding-top: 7px;
 }
+span.et-code {
+    color: red;
+    float: left;
+    width: 30px;
+}
+span.et-exam {
+}
+pre#et-help {
+    text-align: left;
+}
+a#et-info {
+    margin-left: 7px;
+}
+a#et-info-hide {
+    float: right;
+}
