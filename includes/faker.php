@@ -1,14 +1,27 @@
 <?php
 	require 'autoload.php';
+	//Add post
 	function et_faker_add_post() {
 		$post_type = $_POST['post_type'];
-		//$count_post = $_POST['count_post'];
 		$custom_field = isset($_POST['custom_field']) ? $_POST['custom_field'] : '';
+		$post_author = isset($_POST['post_author']) ? $_POST['post_author'] : '';
+		$post_status = isset($_POST['post_status']) ? $_POST['post_status'] : '';
 		$taxonomy_objects = get_object_taxonomies($post_type);
 		$data = array();
 		$faker = Faker\Factory::create();
 	    $title = $faker->sentence(5);
 	    $image = $faker->imageUrl($width = 250, $height = 250);
+	    if(!$post_author){
+	    	$users = get_users( $args_user );
+			if($users){
+				$user_arr = array();
+				foreach ($users as $key => $user) {
+					$user_arr[] = $user->ID;
+				}
+				$post_author = $user_arr[ rand(0, count($user_arr)-1) ];
+			} else
+				$post_author = 1;
+	    }
 	    /*$args_user = array( 'role' => 'author',);
 		$users = get_users( $args_user );
 		if($users){
@@ -34,7 +47,7 @@
 	    	'post_type'		=> $post_type,
 		    'post_title'    => $title,
 		    'post_content'  => $faker->text,
-		    'post_status'   => 'publish',
+		    'post_status'   => $post_status,
 		    'post_author'   => $post_author,
 		    'meta_input'	=> $meta_post,
 		);
@@ -94,3 +107,32 @@
 	}
 	add_action( 'wp_ajax_et_faker_add_post', 'et_faker_add_post' );
 	add_action( 'wp_ajax_nopriv_et_faker_add_post', 'et_faker_add_post' );
+	//Add user
+	function et_faker_add_user(){
+		$user_role = isset($_POST['user_role']) ? $_POST['user_role'] : '';
+		$faker = Faker\Factory::create();
+		$user_login = $faker->userName;
+		$args = array(
+	    	'user_login'    => $user_login,
+		    'user_email'    => $faker->email,
+		    'first_name'    => $faker->firstName,
+		    'last_name'     => $faker->lastName,
+		    'role'			=> strtolower($user_role),
+		);
+		$user_id = wp_insert_user($args);
+		if($user_id){
+			$data[] = array('id' => $user_id, 'user_login' => $user_login, 'url' => get_author_posts_url($user_id));
+		}
+		if($data)
+			wp_send_json(array(
+	            'success'   => true,
+	            'data'	    => $data,
+	        ));
+		else
+			wp_send_json(array(
+	            'success'    => false,
+	            'data'	     => $data,
+	        ));
+	}
+	add_action( 'wp_ajax_et_faker_add_user', 'et_faker_add_user' );
+	add_action( 'wp_ajax_nopriv_et_faker_add_user', 'et_faker_add_user' );

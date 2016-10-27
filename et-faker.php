@@ -9,13 +9,25 @@ Author URI: https://www.enginethemes.com/
 License: GPLv2 or later
 Text Domain: et-faker
 */
+
 require_once 'includes/faker.php';
 
 add_action('admin_menu', 'et_faker_create_menu');
 function et_faker_create_menu() {
-	$menu = add_menu_page('ET Faker', 'ET Faker', 'administrator', 'et-faker', 'et_faker_settings_page');
+	/*$menu = add_menu_page('ET Faker', 'ET Faker', 'manage_options', 'et-faker', 'et_faker_add_post');
+	$sub_add_post = add_submenu_page('et-faker', 'Add Post', 'Add Post', 'manage_options','et_faker_add_post');
 	add_action( 'admin_print_styles-' . $menu, 'et_faker_load_styles' );
-	add_action( 'admin_print_scripts-' . $menu, 'et_faker_load_scripts' );
+	add_action( 'admin_print_scripts-' . $menu, 'et_faker_load_scripts' );*/
+
+	add_menu_page('ET Faker', 'ET Faker', 'manage_options', 'et-faker');
+    $add_post_sub = add_submenu_page('et-faker', 'Add Post', 'Add Post', 'manage_options', 'et-faker-add-post','et_faker_add_post_menu');
+    $add_user_sub = add_submenu_page('et-faker', 'Add User', 'Add User', 'manage_options', 'et-faker-add-user','et_faker_add_user_menu' );
+    unset($GLOBALS['submenu']['et-faker'][0]);
+
+    add_action( 'admin_print_styles-' . $add_post_sub, 'et_faker_load_styles' );
+	add_action( 'admin_print_scripts-' . $add_post_sub, 'et_faker_load_scripts' );
+	add_action( 'admin_print_styles-' . $add_user_sub, 'et_faker_load_styles' );
+	add_action( 'admin_print_scripts-' . $add_user_sub, 'et_faker_load_scripts' );
 }
 function et_faker_load_styles($hook){
 	wp_enqueue_style('et_faker_bootstrap', plugins_url('', __FILE__) . '/assets/css/bootstrap.min.css', false);
@@ -26,21 +38,20 @@ function et_faker_load_scripts(){
 	wp_enqueue_script('et_faker_js', plugins_url('', __FILE__) . '/assets/js/et-faker.js');
 	wp_enqueue_script('et_faker_validate', plugins_url('', __FILE__) . '/assets/js/jquery.validate.js', array('jquery'));
 }
-function et_faker_settings_page() {
+function et_faker_add_post_menu() {
 
 ?>
 <div class="wrap">
-<h1>ET Faker</h1>
+<h1>ET Faker - Add Post</h1>
 <div class="container">
 	<form class="form-horizontal">
 	  	<div class="form-group">
-	    	<label class="control-label col-sm-2" for="email"><?php _e('Post Type', 'et-faker')?></label>
+	    	<label class="control-label col-sm-2" for="email"><?php _e('Post Types', 'et-faker')?></label>
 	    	<div class="col-sm-4">
 	    		<select class="form-control" id="post_type" name="post_type">
 	    			<option value="post">Post</option>
 	    			<option value="page">Page</option>
 	    			<?php
-
 		      			$args = array(
 						   'public'   => true,
 						   '_builtin' => false
@@ -67,6 +78,31 @@ function et_faker_settings_page() {
 	    	</div>
 	  	</div>
 	  	<div class="form-group">
+	    	<label class="control-label col-sm-2" for="email"><?php _e('Author', 'et-faker')?></label>
+	    	<div class="col-sm-4">
+	    		<select class="form-control" id="post_author" name="author">
+	    			<option value="0">Random</option>
+	    			<?php
+	    				$users = get_users();
+	    				if($users)
+	    				foreach ($users as $key => $user) {
+	    					echo '<option value="'.$user->ID.'">'.$user->display_name.'</option>';
+	    				}
+		      		?>
+	    		</select>
+	    	</div>
+	  	</div>
+	  	<div class="form-group">
+	    	<label class="control-label col-sm-2" for="email"><?php _e('Post Status', 'et-faker')?></label>
+	    	<div class="col-sm-4">
+	    		<select class="form-control" id="post_status" name="post_status">
+	    			<option value="publish">Publish</option>
+	    			<option value="draft">Draft</option>
+	    			<option value="pending">Pending</option>
+	    		</select>
+	    	</div>
+	  	</div>
+	  	<div class="form-group">
 	    	<div class="col-sm-2">
 	    	</div>
 	    	<div class="col-sm-6">
@@ -82,6 +118,7 @@ function et_faker_settings_page() {
 	      		<button id="add-post" type="button" class="btn btn-primary">Create Data</button>
 	    	</div>
 	  	</div>
+	  	<input type="hidden" id="ajaxurl" value="<?php echo admin_url('admin-ajax.php'); ?>">
 	</form>
 	<pre id="et-help" class="col-md-6" style="display: none;">
 		<a href="#" id="et-info-hide" style=""><i class="fa fa-times fa-2x" aria-hidden="true"></i></a>
@@ -103,6 +140,52 @@ function et_faker_settings_page() {
 	</pre>
 	<pre id="log" class="col-md-6" style="display: none;">
 		
+	</pre>
+</div>
+</div>
+<?php } ?>
+<?php
+function et_faker_add_user_menu() {
+	
+?>
+<div class="wrap">
+<h1>ET Faker - Add User</h1>
+<div class="container">
+	<form class="form-horizontal">
+	  	<div class="form-group">
+	    	<label class="control-label col-sm-2" for="pwd"><?php _e('Count Users', 'et-faker')?></label>
+	    	<div class="col-sm-4">
+	    		<select class="form-control" id="count_user" name="count_user">
+	    			<option value="1">1</option>
+	    			<option value="3">3</option>
+	    			<option value="5">5</option>
+	    			<option value="10">10</option>
+	    		</select>
+	    	</div>
+	  	</div>
+	  	<div class="form-group">
+	    	<label class="control-label col-sm-2" for="email"><?php _e('Roles', 'et-faker')?></label>
+	    	<div class="col-sm-4">
+	    		<select class="form-control" id="user_role" name="user_role">
+	    			<?php
+	    				$roles = get_editable_roles();
+						if($roles)
+						foreach ($roles as $role) {
+							echo '<option value="'. $role['name'] .'"> '. $role['name'].' </option>';
+						}
+		      		?>
+	    		</select>
+	    	</div>
+	  	</div>
+	  	<div class="form-group">
+	    	<div class="col-sm-offset-2 col-sm-10">
+	      		<button id="add-user" type="button" class="btn btn-primary">Create Data</button>
+	    	</div>
+	  	</div>
+	  	<input type="hidden" id="ajaxurl" value="<?php echo admin_url('admin-ajax.php'); ?>">
+	</form>
+	<pre id="log" class="col-md-6" style="display: none;">
+
 	</pre>
 </div>
 </div>
